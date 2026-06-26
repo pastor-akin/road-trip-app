@@ -65,7 +65,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 /* ── SCROLLABLE PLAN AREA ── */
 #plan-screen{background:var(--bg)}
-.plan-scroll{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom) + 24px)}
+.plan-scroll{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom) + 64px)}
 .plan-scroll::-webkit-scrollbar{display:none}
 
 /* ── HERO SECTION ── */
@@ -645,9 +645,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       </div>
     </div>
 
-    <button class="btn" id="plan-btn" onclick="planRoute()" style="font-size:17px;padding:17px;letter-spacing:.02em">🗺&nbsp; Plan My Route</button>
+    <button class="btn" id="plan-btn" onclick="planRoute()" style="font-size:17px;padding:17px;letter-spacing:.02em;margin-top:8px">🗺&nbsp; Plan My Route</button>
     <div id="plan-results"></div>
-    <button class="btn btn-green" id="drive-prep-btn" style="display:none;font-size:17px;padding:17px" onclick="goToMap()">🚀&nbsp; View Route &amp; Start Drive</button>
+    <button class="btn btn-green" id="drive-prep-btn" style="display:none;font-size:17px;padding:17px;margin-bottom:8px" onclick="goToMap()">🚀&nbsp; View Route &amp; Start Drive</button>
 
   </div>
 </div>
@@ -1128,11 +1128,6 @@ async function planRoute(){
     S.coffeeStops.forEach(s=>L.circleMarker([s.lat,s.lon],{radius:6,color:'#ffb020',fillColor:'#ffb020',fillOpacity:.9,weight:2}).addTo(S.planMarkers));
     S.gasStops.forEach(s=>L.circleMarker([s.lat,s.lon],{radius:5,color:'#5b8fff',fillColor:'#5b8fff',fillOpacity:.9,weight:2}).addTo(S.planMarkers));
 
-    document.getElementById('map-title').textContent=`${Math.round(totalMiles)} mi · ${fmtDur(totalSecs)}`;
-    const cityNames=[fv.split(',')[0],...waypts.map(w=>w.name.split(',')[0]),tv.split(',')[0]];
-    document.getElementById('map-sub').textContent=waypts.length>0?cityNames.join(' → '):`${allStops.length} stop${allStops.length!==1?'s':''} planned`;
-
-    const gas=gasCost(totalMiles);
     // Build planned stop list based on selected stop types
     const stopPts=[];
     const hasCoffee=S.stopTypes.includes('coffee'),hasRest=S.stopTypes.includes('restroom');
@@ -1146,6 +1141,12 @@ async function planRoute(){
     if(hasGasStop){S.gasStops.forEach(s=>stopPts.push({...s,type:'gas',label:'⛽ Gas Stop',icon:'⛽',dotClass:'dot-gas'}));}
     if(hasWelcome){S.welcomeStops.forEach(s=>stopPts.push({...s,type:'welcome',label:'🏛️ Welcome Centre',icon:'🏛️',dotClass:'dot-coffee'}));}
     const allStops=stopPts.sort((a,b)=>a.mile-b.mile);
+
+    document.getElementById('map-title').textContent=`${Math.round(totalMiles)} mi · ${fmtDur(totalSecs)}`;
+    const cityNames=[fv.split(',')[0],...waypts.map(w=>w.name.split(',')[0]),tv.split(',')[0]];
+    document.getElementById('map-sub').textContent=waypts.length>0?cityNames.join(' → '):`${allStops.length} stop${allStops.length!==1?'s':''} planned`;
+
+    const gas=gasCost(totalMiles);
 
     // ── Route option cards (if alternatives found)
     let html='';
