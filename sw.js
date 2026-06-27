@@ -1,5 +1,5 @@
 const CACHE = 'road-trip-v26';
-const ASSETS = ['/', '/index.html', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
+const ASSETS = ['/road-trip-app/', '/road-trip-app/index.html', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {}));
@@ -14,7 +14,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => e.respondWith(
   fetch(e.request).then(res => {
     // Always fetch fresh from network for HTML; fall back to cache for everything else
-    if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+    if (e.request.url.includes('index.html') || e.request.url.endsWith('/road-trip-app/')) {
       const clone = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, clone));
     }
