@@ -65,7 +65,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 /* ── SCROLLABLE PLAN AREA ── */
 #plan-screen{background:var(--bg)}
-.plan-scroll{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom) + 120px)}
+.plan-scroll{flex:1;overflow-y:auto;padding:0 16px calc(var(--safe-bottom) + 180px);display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
 .plan-scroll::-webkit-scrollbar{display:none}
 
 /* ── HERO SECTION ── */
@@ -199,6 +199,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   padding:13px 0;border-bottom:1px solid var(--border);
 }
 .stop-item:last-child{border-bottom:none}
+.stop-plan-card{padding:14px 0;border-bottom:1px solid var(--border);transition:opacity .3s}
+.stop-plan-card:last-child{border-bottom:none}
+.stop-plan-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.stop-plan-place{font-size:14px;font-weight:700;color:var(--text);padding-left:48px;margin-bottom:10px;min-height:20px}
+.stop-plan-btns{display:flex;gap:8px;padding-left:48px}
+.stop-accept-btn{flex:1;padding:10px 8px;background:rgba(34,211,107,.12);border:1px solid rgba(34,211,107,.4);border-radius:12px;color:#22d36b;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.stop-skip-btn{flex:1;padding:10px 8px;background:rgba(255,77,106,.08);border:1px solid rgba(255,77,106,.3);border-radius:12px;color:#ff4d6a;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stop-dot{
   width:36px;height:36px;border-radius:50%;display:flex;
   align-items:center;justify-content:center;font-size:17px;
@@ -863,6 +870,7 @@ const S={
   steps:[],stepIdx:0,stepVoiced:{},clockInterval:null,stepStartDist:0,
   wakeLock:null,silentAudio:null,voiceMuted:false,gpsVoice:null,rerouting:false,
   stopTypes:['coffee','restroom','gas'],welcomeStops:[],rerouteConfirmShown:false,
+  plannedStops:[],allStops:[],
 };
 
 
@@ -1199,23 +1207,32 @@ async function planRoute(){
       <div id="weather-content"><div class="loading"><div class="spinner"></div> Checking forecast…</div></div>
     </div>`;
 
-    html+=`<div class="card" style="padding-bottom:4px"><div class="card-title">Your Planned Stops</div>`;
+    S.plannedStops=[];
+    html+=`<div class="card" style="padding-bottom:8px">
+      <div class="card-title">Stops Along Your Route</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:12px">Review each stop and add or skip it before you drive.</div>`;
     if(allStops.length===0){html+=`<div style="font-size:13px;color:var(--muted);padding:8px 0">No stop types selected. Enable some above in Trip Settings.</div>`;}
     allStops.forEach((s,i)=>{
-      html+=`<div class="stop-item" id="stop-row-${i}">
-        <div class="stop-dot ${s.dotClass}">${s.icon}</div>
-        <div class="stop-body">
-          <div class="stop-name">${s.label}</div>
-          <div id="stop-place-${i}" style="font-size:12px;color:var(--accent);margin-top:3px">🔍 Finding nearby…</div>
-          <div class="stop-eta">ETA ${fmtETA((s.mile/totalMiles)*totalSecs)} · Mile ${Math.round(s.mile)}</div>
+      html+=`<div class="stop-plan-card" id="stop-row-${i}">
+        <div class="stop-plan-header">
+          <div class="stop-dot ${s.dotClass}" id="stop-dot-${i}">${s.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div class="stop-name">${s.label}</div>
+            <div class="stop-eta">Mile ${Math.round(s.mile)} · ETA ${fmtETA((s.mile/totalMiles)*totalSecs)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+            <div class="stop-mile">Mile ${Math.round(s.mile)}</div>
+            <div class="stop-weather-badge" id="sw-${Math.round(s.mile)}"></div>
+          </div>
         </div>
-        <div class="stop-right">
-          <div class="stop-mile">Mile ${Math.round(s.mile)}</div>
-          <div class="stop-weather-badge" id="sw-${Math.round(s.mile)}"></div>
+        <div class="stop-plan-place" id="stop-place-${i}"><span style="color:var(--muted);font-size:12px;font-style:italic">🔍 Searching for nearby place…</span></div>
+        <div class="stop-plan-btns" id="stop-btns-${i}">
+          <button class="stop-accept-btn" onclick="acceptStop(${i})">✅ Add to Route</button>
+          <button class="stop-skip-btn" onclick="rejectStop(${i})">✕ Skip</button>
         </div>
       </div>`;
     });
-    html+=`<div class="stop-item">
+    html+=`<div class="stop-item" style="margin-top:4px">
       <div class="stop-dot dot-dest">🏁</div>
       <div class="stop-body"><div class="stop-name">Destination</div><div class="stop-eta">ETA ${fmtETA(totalSecs)}</div></div>
       <div class="stop-right"><div class="stop-mile">${Math.round(totalMiles)} mi</div></div>
@@ -1235,13 +1252,13 @@ async function planRoute(){
     S.allStops=allStops;
     allStops.forEach((s,i)=>{
       fetchNearbyPlace(s.lat,s.lon,s.type).then(place=>{
+        s.place=place;
         const el=document.getElementById(`stop-place-${i}`);
         if(!el)return;
         if(place){
-          el.innerHTML=`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&ll=${place.lat},${place.lon}" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:600">${place.name} ↗</a>`;
+          el.innerHTML=`<span style="font-weight:700">${place.name}</span>`;
         } else {
-          const q=s.type==='gas'?'gas+station':s.type==='welcome'?'rest+stop+services':'coffee+shop';
-          el.innerHTML=`<a href="https://www.google.com/maps/search/${q}/@${s.lat},${s.lon},14z" target="_blank" style="color:var(--muted);text-decoration:none;font-size:11px">Search nearby ↗</a>`;
+          el.innerHTML=`<span style="color:var(--muted);font-size:12px;font-style:italic">No specific place found nearby</span>`;
         }
       });
     });
@@ -1397,6 +1414,22 @@ function onGPS(pos){
       S.offtrackShown=false;
     }
   }
+  // Check accepted planned stops
+  S.plannedStops.forEach(p=>{
+    if(p.alerted)return;
+    const milesAway=p.mile-S.totalDriven;
+    if(milesAway>0&&milesAway<=2){
+      p.alerted=true;
+      const name=p.place?.name||p.label;
+      speak(`Coming up in ${fmtTurnDist(milesAway)}: ${name}.`);
+      const banner=document.getElementById('stop-alert');
+      if(banner){
+        banner.querySelector&&(banner.querySelector('.alert-title')||banner).textContent=`${p.icon} ${name} ahead`;
+        banner.style.display='block';
+        setTimeout(()=>{if(banner)banner.style.display='none';},8000);
+      }
+    }
+  });
   // Check waypoint arrivals
   S.driveWaypoints.forEach((wp,i)=>{
     if(wp.reached)return;
@@ -1453,6 +1486,27 @@ function onGPS(pos){
   }
 }
 function onGPSErr(err){const el=document.getElementById('gps-err');el.style.display='block';el.textContent=`📡 GPS error: ${err.message} — Allow location in Settings → Safari → Location.`;}
+
+function acceptStop(i){
+  const s=S.allStops[i];if(!s)return;
+  s.accepted=true;s.rejected=false;
+  if(!S.plannedStops.find(p=>p.stopIdx===i))S.plannedStops.push({...s,stopIdx:i,alerted:false});
+  const row=document.getElementById(`stop-row-${i}`);
+  const btns=document.getElementById(`stop-btns-${i}`);
+  const dot=document.getElementById(`stop-dot-${i}`);
+  if(btns)btns.innerHTML=`<div style="color:var(--green);font-size:13px;font-weight:700;padding:4px 0">✅ Added to your route</div>`;
+  if(row){row.style.borderLeft='3px solid #22d36b';row.style.paddingLeft='10px';}
+  if(dot){dot.style.boxShadow='0 0 0 2px #22d36b';}
+}
+function rejectStop(i){
+  const s=S.allStops[i];if(!s)return;
+  s.accepted=false;s.rejected=true;
+  S.plannedStops=S.plannedStops.filter(p=>p.stopIdx!==i);
+  const row=document.getElementById(`stop-row-${i}`);
+  const btns=document.getElementById(`stop-btns-${i}`);
+  if(btns)btns.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:4px 0">⛔ Skipped — won't stop here</div>`;
+  if(row)row.style.opacity='0.4';
+}
 
 async function fetchNearbyPlace(lat,lon,type){
   try{
