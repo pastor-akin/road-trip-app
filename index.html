@@ -1426,7 +1426,8 @@ function onGPS(pos){
       speak(`Coming up in ${fmtTurnDist(milesAway)}: ${name}.`);
       const banner=document.getElementById('stop-alert');
       if(banner){
-        banner.querySelector&&(banner.querySelector('.alert-title')||banner).textContent=`${p.icon} ${name} ahead`;
+        const titleEl=banner.querySelector('.alert-title')||banner;
+        titleEl.textContent=`${p.icon} ${name} ahead`;
         banner.style.display='block';
         setTimeout(()=>{if(banner)banner.style.display='none';},8000);
       }
