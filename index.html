@@ -65,7 +65,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 /* ── SCROLLABLE PLAN AREA ── */
 #plan-screen{background:var(--bg)}
-.plan-scroll{flex:1;overflow-y:auto;padding:0 16px calc(var(--safe-bottom) + 260px);display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.plan-scroll{flex:1;overflow-y:auto;padding:0 16px calc(var(--safe-bottom) + 400px);display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
 .plan-scroll::-webkit-scrollbar{display:none}
 
 /* ── HERO SECTION ── */
@@ -871,6 +871,7 @@ const S={
   wakeLock:null,silentAudio:null,voiceMuted:false,gpsVoice:null,rerouting:false,
   stopTypes:['coffee','restroom','gas'],welcomeStops:[],rerouteConfirmShown:false,
   plannedStops:[],allStops:[],
+  maneuverMarker:null,
 };
 
 
@@ -912,13 +913,18 @@ function pickGpsVoice(){
   const voices=speechSynthesis.getVoices();
   if(!voices.length)return null;
   const priority=[
-    v=>v.name==='Samantha',                    // iOS default (Siri-like)
-    v=>v.name==='Karen',                       // iOS Australian
-    v=>v.name==='Moira',                       // iOS Irish
-    v=>v.name==='Tessa',                       // iOS South African
-    v=>/google.*us.*english/i.test(v.name),    // Chrome/Android
+    v=>v.name==='Samantha (Enhanced)',         // iOS enhanced — most natural
+    v=>v.name==='Karen (Enhanced)',
+    v=>v.name==='Moira (Enhanced)',
+    v=>v.name==='Tessa (Enhanced)',
+    v=>v.name==='Samantha',                    // iOS standard
+    v=>v.name==='Karen',
+    v=>v.name==='Moira',
+    v=>v.name==='Tessa',
+    v=>/google.*us.*english/i.test(v.name),    // Chrome/Android Google voice
     v=>/google.*english/i.test(v.name),
-    v=>v.lang==='en-US'&&v.localService,       // local en-US
+    v=>v.name.includes('Enhanced')&&v.lang.startsWith('en'), // any enhanced English
+    v=>v.lang==='en-US'&&v.localService,
     v=>v.lang.startsWith('en')&&v.localService,
     v=>v.lang==='en-US',
     v=>v.lang.startsWith('en'),
@@ -938,8 +944,8 @@ function speak(msg){
   const u=new SpeechSynthesisUtterance(msg);
   if(S.gpsVoice)u.voice=S.gpsVoice;
   u.lang='en-US';
-  u.rate=0.92;   // slightly slower → easier to catch while driving
-  u.pitch=0.95;  // slightly lower → sounds like a real GPS
+  u.rate=0.88;   // calm, clear — not rushed
+  u.pitch=1.0;   // natural pitch — avoid the robot low-pitch effect
   u.volume=1;
   speechSynthesis.speak(u);
 }
@@ -1352,7 +1358,7 @@ function startDrive(){
   }
   setTimeout(()=>S.driveMap.invalidateSize(),380);
   if(S.userMarker)S.userMarker.remove();
-  const ci=L.divIcon({html:`<div style="width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;border:2.5px solid white;box-shadow:0 0 14px rgba(34,211,107,.7)">🚗</div>`,iconSize:[32,32],iconAnchor:[16,16],className:''});
+  const ci=L.divIcon({html:`<div style="width:44px;height:44px;filter:drop-shadow(0 0 10px rgba(34,211,107,.8))"><svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="16" ry="18" fill="rgba(34,211,107,0.18)"/><rect x="14" y="7" width="16" height="26" rx="7" fill="#22d36b"/><rect x="16" y="9" width="12" height="10" rx="3" fill="rgba(210,255,235,0.85)"/><rect x="17" y="23" width="10" height="6" rx="2" fill="rgba(210,255,235,0.5)"/><rect x="10" y="10" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="29" y="10" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="10" y="24" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="29" y="24" width="5" height="8" rx="2.5" fill="#0a2a12"/><ellipse cx="17" cy="7" rx="3.5" ry="2" fill="#fffde0" opacity="0.95"/><ellipse cx="27" cy="7" rx="3.5" ry="2" fill="#fffde0" opacity="0.95"/><rect x="14" y="32" width="6" height="3" rx="1.5" fill="#ff4d6a" opacity="0.9"/><rect x="24" y="32" width="6" height="3" rx="1.5" fill="#ff4d6a" opacity="0.9"/></svg></div>`,iconSize:[44,44],iconAnchor:[22,22],className:''});
   S.userMarker=L.marker([0,0],{icon:ci,zIndexOffset:1000}).addTo(S.driveMap);
   // Save original destination so user can always return to it
   if(!S.origDestCoords&&S.destCoords){
@@ -1862,6 +1868,21 @@ function getStepArrow(type,modifier){
   return`<line x1="27" y1="46" x2="27" y2="14" ${s}/><polyline points="15,27 27,12 39,27" ${s} fill="none"/>`;
 }
 
+function getManeuverArrow(modifier){
+  // Big glowing directional arrow placed ON the map at the decision point
+  const m=modifier||'';
+  const isLeft=m.includes('left'),isRight=m.includes('right');
+  const color=isLeft?'#5b8fff':isRight?'#22d36b':'#ffb020';
+  const glow=isLeft?'rgba(91,143,255,.6)':isRight?'rgba(34,211,107,.6)':'rgba(255,176,32,.6)';
+  let arrow;
+  if(isLeft&&m.includes('slight'))arrow=`<path d="M38,52 L38,28 Q38,16 28,12 L18,8" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="8,8 18,8 18,18" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  else if(isLeft)arrow=`<path d="M38,52 L38,30 Q38,12 20,12" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="8,12 20,12 20,22" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  else if(isRight&&m.includes('slight'))arrow=`<path d="M22,52 L22,28 Q22,16 32,12 L42,8" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="52,8 42,8 42,18" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  else if(isRight)arrow=`<path d="M22,52 L22,30 Q22,12 40,12" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="52,12 40,12 40,22" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  else arrow=`<line x1="30" y1="52" x2="30" y2="10" stroke="${color}" stroke-width="6" stroke-linecap="round"/><polyline points="18,24 30,8 42,24" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  return`<div style="width:60px;height:60px;filter:drop-shadow(0 0 10px ${glow})"><svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="28" fill="rgba(10,12,20,.82)" stroke="${color}" stroke-width="2.5"/>${arrow}</svg></div>`;
+}
+
 function getStepText(type,modifier,name){
   const road=name?` on ${name}`:'';
   if(type==='arrive')return'Arrive at destination';
@@ -1922,6 +1943,15 @@ function updateTurnBanner(lat,lon){
   if(arrSvg)arrSvg.innerHTML=getStepArrow(nextStep.type,nextStep.modifier);
   document.getElementById('turn-instruction').textContent=instr;
   document.getElementById('turn-dist-badge').textContent=fmtTurnDist(dist);
+
+  // ── Map maneuver arrow: show on road for keep-left/right, forks, turns ──
+  if(S.maneuverMarker){S.driveMap.removeLayer(S.maneuverMarker);S.maneuverMarker=null;}
+  const needsMapArrow=nextStep.type==='fork'||nextStep.type==='end of road'||
+    (nextStep.modifier&&(nextStep.modifier.includes('left')||nextStep.modifier.includes('right')));
+  if(needsMapArrow&&dist<1.5&&dist>0.05){
+    const icon=L.divIcon({html:getManeuverArrow(nextStep.modifier),iconSize:[60,60],iconAnchor:[30,30],className:''});
+    S.maneuverMarker=L.marker([nextStep.lat,nextStep.lon],{icon,zIndexOffset:900,interactive:false}).addTo(S.driveMap);
+  }
   document.getElementById('turn-progress-fill').style.width=pct+'%';
   // Voice callouts
   if(!S.stepVoiced[nextIdx])S.stepVoiced[nextIdx]={};
@@ -2074,6 +2104,7 @@ function stopDrive(){
   if(S.incidentCheckId){clearInterval(S.incidentCheckId);S.incidentCheckId=null;}
   if(S.clockInterval){clearInterval(S.clockInterval);S.clockInterval=null;}
   if(S.userMarker){S.userMarker.remove();S.userMarker=null;}
+  if(S.maneuverMarker){S.driveMap.removeLayer(S.maneuverMarker);S.maneuverMarker=null;}
   releaseWakeLock();
   stopSilentAudio();
   const tstrip=document.getElementById('turn-strip');if(tstrip)tstrip.style.display='none';
