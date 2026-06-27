@@ -1248,19 +1248,21 @@ async function planRoute(){
     res.innerHTML=html;driveBtn.style.display='block';
     setTimeout(()=>driveBtn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
 
-    // Fetch real nearby places for each planned stop
+    // Fetch real nearby places — staggered to avoid Overpass rate limits
     S.allStops=allStops;
     allStops.forEach((s,i)=>{
-      fetchNearbyPlace(s.lat,s.lon,s.type).then(place=>{
-        s.place=place;
-        const el=document.getElementById(`stop-place-${i}`);
-        if(!el)return;
-        if(place){
-          el.innerHTML=`<span style="font-weight:700">${place.name}</span>`;
-        } else {
-          el.innerHTML=`<span style="color:var(--muted);font-size:12px;font-style:italic">No specific place found nearby</span>`;
-        }
-      });
+      setTimeout(()=>{
+        fetchNearbyPlace(s.lat,s.lon,s.type).then(place=>{
+          s.place=place;
+          const el=document.getElementById(`stop-place-${i}`);
+          if(!el)return;
+          if(place){
+            el.innerHTML=`<span style="font-weight:700">${place.name}</span>`;
+          } else {
+            el.innerHTML=`<span style="color:var(--muted);font-size:12px;font-style:italic">No specific place found nearby</span>`;
+          }
+        });
+      }, i*900);
     });
 
     // Fetch weather async
@@ -1509,35 +1511,38 @@ function rejectStop(i){
 }
 
 async function fetchNearbyPlace(lat,lon,type){
-  try{
-    const r=12000;
-    let q;
-    if(type==='gas'){
-      q=`[out:json][timeout:8];node["amenity"="fuel"](around:${r},${lat},${lon});out body 8;`;
-    }else if(type==='welcome'){
-      q=`[out:json][timeout:8];(node["highway"="services"](around:${r},${lat},${lon});node["tourism"="information"]["name"](around:${r},${lat},${lon}););out body 5;`;
-    }else if(type==='restroom'||type==='rest'){
-      // rest areas, highway services, truck stops
-      q=`[out:json][timeout:8];(node["highway"="rest_area"](around:${r},${lat},${lon});way["highway"="rest_area"](around:${r},${lat},${lon});node["amenity"="toilets"]["name"](around:${r},${lat},${lon});node["highway"="services"](around:${r},${lat},${lon});node["amenity"="fuel"]["brand"~"Love|Pilot|Flying J|TA Travel|Petro",i](around:${r},${lat},${lon}););out body 8;`;
-    }else{
-      // coffee — search cafes and coffee chains
-      q=`[out:json][timeout:8];(node["amenity"="cafe"]["name"](around:${r},${lat},${lon});node["amenity"="fast_food"]["cuisine"~"coffee",i]["name"](around:${r},${lat},${lon});node["brand"~"Starbucks|Dunkin|Tim Horton|Peet|Dutch Bros|Caribou",i](around:${r},${lat},${lon}););out body 10;`;
-    }
-    const res=await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(q)}`);
-    const data=await res.json();
-    const named=(data.elements||[]).filter(e=>e.tags?.name);
-    if(!named.length)return null;
-    // Prefer recognisable chains then any named place
-    const restroomChains=['love\'s','pilot','flying j','ta travel','petro','rest area','service area'];
-    const coffeeChains=['starbucks','dunkin','mcdonald','panera','caribou','peet','dutch bros','tim horton','wawa','sheetz'];
-    const chains=(type==='restroom'||type==='rest')?restroomChains:coffeeChains;
-    named.sort((a,b)=>{
-      const al=a.tags.name.toLowerCase(),bl=b.tags.name.toLowerCase();
-      return (chains.some(c=>bl.includes(c))?1:0)-(chains.some(c=>al.includes(c))?1:0);
-    });
-    const el=named[0];
-    return{name:el.tags.name,lat:el.lat,lon:el.lon};
-  }catch(e){return null;}
+  const r=20000; // 20km radius — wide enough to catch places near highway exits
+  let q;
+  if(type==='gas'){
+    q=`[out:json][timeout:12];node["amenity"="fuel"](around:${r},${lat},${lon});out body 10;`;
+  }else if(type==='welcome'){
+    q=`[out:json][timeout:12];(node["highway"="services"](around:${r},${lat},${lon});node["tourism"="information"]["name"](around:${r},${lat},${lon}););out body 5;`;
+  }else if(type==='restroom'||type==='rest'){
+    q=`[out:json][timeout:12];(node["highway"="rest_area"](around:${r},${lat},${lon});node["amenity"="toilets"]["name"](around:${r},${lat},${lon});node["highway"="services"](around:${r},${lat},${lon});node["amenity"="fuel"]["brand"~"Love|Pilot|Flying J|TA Travel|Petro",i](around:${r},${lat},${lon}););out body 10;`;
+  }else{
+    q=`[out:json][timeout:12];(node["amenity"="cafe"]["name"](around:${r},${lat},${lon});node["amenity"="fast_food"]["cuisine"~"coffee",i]["name"](around:${r},${lat},${lon});node["brand"~"Starbucks|Dunkin|Tim Horton|Peet|Dutch Bros|Caribou|Wawa|Sheetz",i](around:${r},${lat},${lon}););out body 12;`;
+  }
+  const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+  for(const ep of endpoints){
+    try{
+      const res=await fetch(`${ep}?data=${encodeURIComponent(q)}`);
+      if(!res.ok)continue;
+      const data=await res.json();
+      // nodes only (ways have no lat/lon in body output)
+      const named=(data.elements||[]).filter(e=>e.type==='node'&&e.tags?.name);
+      if(!named.length)continue;
+      const restroomChains=["love's",'pilot','flying j','ta travel','petro','rest area','service area'];
+      const coffeeChains=['starbucks','dunkin','mcdonald','panera','caribou','peet','dutch bros','tim horton','wawa','sheetz'];
+      const chains=(type==='restroom'||type==='rest')?restroomChains:coffeeChains;
+      named.sort((a,b)=>{
+        const al=a.tags.name.toLowerCase(),bl=b.tags.name.toLowerCase();
+        return (chains.some(c=>bl.includes(c))?1:0)-(chains.some(c=>al.includes(c))?1:0);
+      });
+      const el=named[0];
+      return{name:el.tags.name,lat:el.lat,lon:el.lon};
+    }catch(e){continue;}
+  }
+  return null;
 }
 
 function findStop(type){

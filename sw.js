@@ -1,4 +1,4 @@
-const CACHE = 'road-trip-v21';
+const CACHE = 'road-trip-v22';
 const ASSETS = ['/', '/index.html', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
 
 self.addEventListener('install', e => {
