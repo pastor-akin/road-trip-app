@@ -1,34 +1,23 @@
-const CACHE = 'road-trip-v31';
-const ASSETS = ['/road-trip-app/', '/road-trip-app/index.html', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
+const CACHE = 'road-trip-v14';
+const ASSETS = ['/', '/index.html', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(() => {}));
-  self.skipWaiting();
+  self.skipWaiting(); // activate immediately, don't wait for old tabs to close
 });
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
   );
-  self.clients.claim();
+  self.clients.claim(); // take control of all open tabs right away
 });
-self.addEventListener('fetch', e => {
-  const url = e.request.url;
-
-  // External APIs — always network, never cache
-  if (url.includes('nominatim') || url.includes('osrm') || url.includes('overpass') ||
-      url.includes('tomtom') || url.includes('open-meteo') || url.includes('openstreetmap')) {
-    return;
-  }
-
-  // App shell (HTML + Leaflet) — cache-first, update in background
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      const networkFetch = fetch(e.request).then(res => {
-        if (res.ok) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-        return res;
-      }).catch(() => cached);
-      // Return cache instantly if available, otherwise wait for network
-      return cached || networkFetch;
-    })
-  );
-});
+self.addEventListener('fetch', e => e.respondWith(
+  fetch(e.request).then(res => {
+    // Always fetch fresh from network for HTML; fall back to cache for everything else
+    if (e.request.url.includes('index.html') || e.request.url.endsWith('/')) {
+      const clone = res.clone();
+      caches.open(CACHE).then(c => c.put(e.request, clone));
+    }
+    return res;
+  }).catch(() => caches.match(e.request))
+));

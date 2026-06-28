@@ -65,7 +65,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
 
 /* ── SCROLLABLE PLAN AREA ── */
 #plan-screen{background:var(--bg)}
-.plan-scroll{flex:1;overflow-y:auto;padding:0 16px calc(var(--safe-bottom) + 400px);display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.plan-scroll{flex:1;overflow-y:auto;padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--safe-bottom) + 24px)}
 .plan-scroll::-webkit-scrollbar{display:none}
 
 /* ── HERO SECTION ── */
@@ -199,13 +199,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
   padding:13px 0;border-bottom:1px solid var(--border);
 }
 .stop-item:last-child{border-bottom:none}
-.stop-plan-card{padding:14px 0;border-bottom:1px solid var(--border);transition:opacity .3s}
-.stop-plan-card:last-child{border-bottom:none}
-.stop-plan-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.stop-plan-place{font-size:15px;font-weight:800;color:var(--accent);padding-left:48px;margin-bottom:10px;min-height:22px;letter-spacing:-.01em}
-.stop-plan-btns{display:flex;gap:8px;padding-left:48px}
-.stop-accept-btn{flex:1;padding:10px 8px;background:rgba(34,211,107,.12);border:1px solid rgba(34,211,107,.4);border-radius:12px;color:#22d36b;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.stop-skip-btn{flex:1;padding:10px 8px;background:rgba(255,77,106,.08);border:1px solid rgba(255,77,106,.3);border-radius:12px;color:#ff4d6a;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .stop-dot{
   width:36px;height:36px;border-radius:50%;display:flex;
   align-items:center;justify-content:center;font-size:17px;
@@ -542,20 +535,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       <div class="settings-list">
 
         <!-- Rest Stops -->
-        <div class="settings-group-hd">Stop Types</div>
-        <div style="padding:4px 0 10px">
-          <div class="pref-chips">
-            <div class="pref-chip on" id="chip-coffee" onclick="toggleStopType('coffee')">☕ Coffee</div>
-            <div class="pref-chip on" id="chip-restroom" onclick="toggleStopType('restroom')">🚻 Restrooms</div>
-            <div class="pref-chip on" id="chip-gas-stop" onclick="toggleStopType('gas')">⛽ Gas Stops</div>
-            <div class="pref-chip" id="chip-welcome" onclick="toggleStopType('welcome')">🏛️ Welcome Centres</div>
-          </div>
-        </div>
-        <div class="settings-group-hd">Stop Interval</div>
+        <div class="settings-group-hd">Rest Stops</div>
         <div class="settings-row">
-          <div class="si" style="background:rgba(255,176,32,.15)">📍</div>
+          <div class="si" style="background:rgba(255,176,32,.15)">☕</div>
           <div class="sn">
-            <div class="sn-main">Miles between stops</div>
+            <div class="sn-main">Stop interval</div>
             <div class="sn-sub">Remind me to stop between these distances</div>
           </div>
           <div class="sc">
@@ -652,9 +636,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
       </div>
     </div>
 
-    <button class="btn" id="plan-btn" onclick="planRoute()" style="font-size:17px;padding:17px;letter-spacing:.02em;margin-top:8px">🗺&nbsp; Plan My Route</button>
+    <button class="btn" id="plan-btn" onclick="planRoute()" style="font-size:17px;padding:17px;letter-spacing:.02em">🗺&nbsp; Plan My Route</button>
     <div id="plan-results"></div>
-    <button class="btn btn-green" id="drive-prep-btn" style="display:none;font-size:17px;padding:17px;margin-bottom:8px" onclick="goToMap()">🚀&nbsp; View Route &amp; Start Drive</button>
+    <button class="btn btn-green" id="drive-prep-btn" style="display:none;font-size:17px;padding:17px" onclick="goToMap()">🚀&nbsp; View Route &amp; Start Drive</button>
 
   </div>
 </div>
@@ -766,9 +750,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
         <div class="alert-sub" id="sa-sub">Find a spot near you</div>
       </div>
     </div>
-    <div class="btn-row" id="stop-alert-btns">
+    <div class="btn-row">
       <button class="btn btn-sm" onclick="findStop('coffee')" style="background:linear-gradient(135deg,#ffb020,#ff7c0a);box-shadow:0 4px 16px rgba(255,176,32,.25)">☕ Coffee</button>
-      <button class="btn btn-sm btn-ghost" onclick="findStop('rest')">🚻 Rest Area</button>
+      <button class="btn btn-sm btn-ghost" onclick="findStop('rest')">🛑 Rest Area</button>
     </div>
     <div style="margin:8px 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);text-align:center">Not ready? Remind me in</div>
     <div class="snooze-row">
@@ -800,18 +784,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-
     <div style="display:flex;align-items:center;gap:8px">
       <div id="offtrack-spinner" style="width:14px;height:14px;border:2px solid rgba(91,143,255,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
       <div style="font-size:13px;font-weight:600;color:var(--accent)" id="offtrack-sub">Recalculating route…</div>
-    </div>
-  </div>
-
-  <!-- Reroute confirmation overlay -->
-  <div id="reroute-confirm" style="display:none;position:absolute;inset:0;z-index:400;background:rgba(10,12,20,.97);flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:16px;text-align:center">
-    <div style="font-size:52px;margin-bottom:4px">🔄</div>
-    <div style="font-size:20px;font-weight:800;color:var(--text)">You've gone off route</div>
-    <div style="font-size:14px;color:var(--muted);margin-top:-4px;line-height:1.5">Keep heading to your original destination?</div>
-    <div style="font-size:15px;font-weight:700;color:var(--accent);padding:14px 16px;background:rgba(91,143,255,.1);border:1px solid rgba(91,143,255,.3);border-radius:14px;width:100%;box-sizing:border-box" id="reroute-dest-label">—</div>
-    <div style="display:flex;gap:10px;width:100%">
-      <button class="btn btn-green" style="flex:1;font-size:15px;padding:15px" onclick="confirmReroute(true)">✅ Yes, keep going</button>
-      <button class="btn btn-red" style="flex:1;font-size:15px;padding:15px" onclick="confirmReroute(false)">🗺 Change route</button>
     </div>
   </div>
 
@@ -868,10 +840,7 @@ const S={
   waypointCount:0,waypointIds:[],
   driveWaypoints:[],
   steps:[],stepIdx:0,stepVoiced:{},clockInterval:null,stepStartDist:0,
-  wakeLock:null,silentAudio:null,voiceMuted:false,gpsVoice:null,rerouting:false,
-  stopTypes:['coffee','restroom','gas'],welcomeStops:[],rerouteConfirmShown:false,
-  plannedStops:[],allStops:[],
-  maneuverMarker:null,
+  wakeLock:null,silentAudio:null,voiceMuted:false,gpsVoice:null,rerouting:false,offtrackCount:0,lastRerouteTime:0,
 };
 
 
@@ -913,18 +882,13 @@ function pickGpsVoice(){
   const voices=speechSynthesis.getVoices();
   if(!voices.length)return null;
   const priority=[
-    v=>v.name==='Samantha (Enhanced)',         // iOS enhanced — most natural
-    v=>v.name==='Karen (Enhanced)',
-    v=>v.name==='Moira (Enhanced)',
-    v=>v.name==='Tessa (Enhanced)',
-    v=>v.name==='Samantha',                    // iOS standard
-    v=>v.name==='Karen',
-    v=>v.name==='Moira',
-    v=>v.name==='Tessa',
-    v=>/google.*us.*english/i.test(v.name),    // Chrome/Android Google voice
+    v=>v.name==='Samantha',                    // iOS default (Siri-like)
+    v=>v.name==='Karen',                       // iOS Australian
+    v=>v.name==='Moira',                       // iOS Irish
+    v=>v.name==='Tessa',                       // iOS South African
+    v=>/google.*us.*english/i.test(v.name),    // Chrome/Android
     v=>/google.*english/i.test(v.name),
-    v=>v.name.includes('Enhanced')&&v.lang.startsWith('en'), // any enhanced English
-    v=>v.lang==='en-US'&&v.localService,
+    v=>v.lang==='en-US'&&v.localService,       // local en-US
     v=>v.lang.startsWith('en')&&v.localService,
     v=>v.lang==='en-US',
     v=>v.lang.startsWith('en'),
@@ -944,8 +908,8 @@ function speak(msg){
   const u=new SpeechSynthesisUtterance(msg);
   if(S.gpsVoice)u.voice=S.gpsVoice;
   u.lang='en-US';
-  u.rate=0.88;   // calm, clear — not rushed
-  u.pitch=1.0;   // natural pitch — avoid the robot low-pitch effect
+  u.rate=0.92;   // slightly slower → easier to catch while driving
+  u.pitch=0.95;  // slightly lower → sounds like a real GPS
   u.volume=1;
   speechSynthesis.speak(u);
 }
@@ -1119,11 +1083,7 @@ async function planRoute(){
     // Save waypoints for drive mode
     S.driveWaypoints=waypts.map(w=>({...w,reached:false}));
     const nowH=new Date().getHours();S.isNight=isNightH(nowH)||isNightH((nowH+totalSecs/3600)%24)||totalSecs/3600>8;
-    // Coffee: one stop per hour of driving (min 40 mi apart)
-    const coffeeInterval=Math.max(40,Math.round(totalMiles/Math.ceil(totalSecs/3600)));
-    S.coffeeStops=sampleMile(coords,coffeeInterval);
-    S.gasStops=sampleMile(coords,tank*0.8);
-    S.welcomeStops=sampleMile(coords,120);
+    S.coffeeStops=sampleMile(coords,sMid);S.gasStops=sampleMile(coords,tank*0.8);
 
     // Map
     if(!S.planMap){
@@ -1144,25 +1104,12 @@ async function planRoute(){
     S.coffeeStops.forEach(s=>L.circleMarker([s.lat,s.lon],{radius:6,color:'#ffb020',fillColor:'#ffb020',fillOpacity:.9,weight:2}).addTo(S.planMarkers));
     S.gasStops.forEach(s=>L.circleMarker([s.lat,s.lon],{radius:5,color:'#5b8fff',fillColor:'#5b8fff',fillOpacity:.9,weight:2}).addTo(S.planMarkers));
 
-    // Build planned stop list based on selected stop types
-    const stopPts=[];
-    const hasCoffee=S.stopTypes.includes('coffee'),hasRest=S.stopTypes.includes('restroom');
-    const hasGasStop=S.stopTypes.includes('gas'),hasWelcome=S.stopTypes.includes('welcome');
-    if(hasCoffee||hasRest){
-      S.coffeeStops.forEach(s=>{
-        const label=hasCoffee&&hasRest?'☕🚻 Coffee & Restroom':hasCoffee?'☕ Coffee Stop':'🚻 Restroom Break';
-        stopPts.push({...s,type:'coffee',label,icon:hasCoffee?'☕':'🚻',dotClass:'dot-coffee'});
-      });
-    }
-    if(hasGasStop){S.gasStops.forEach(s=>stopPts.push({...s,type:'gas',label:'⛽ Gas Stop',icon:'⛽',dotClass:'dot-gas'}));}
-    if(hasWelcome){S.welcomeStops.forEach(s=>stopPts.push({...s,type:'welcome',label:'🏛️ Welcome Centre',icon:'🏛️',dotClass:'dot-coffee'}));}
-    const allStops=stopPts.sort((a,b)=>a.mile-b.mile);
-
     document.getElementById('map-title').textContent=`${Math.round(totalMiles)} mi · ${fmtDur(totalSecs)}`;
     const cityNames=[fv.split(',')[0],...waypts.map(w=>w.name.split(',')[0]),tv.split(',')[0]];
-    document.getElementById('map-sub').textContent=waypts.length>0?cityNames.join(' → '):`${allStops.length} stop${allStops.length!==1?'s':''} planned`;
+    document.getElementById('map-sub').textContent=waypts.length>0?cityNames.join(' → '):`${S.coffeeStops.length} stops planned`;
 
     const gas=gasCost(totalMiles);
+    const allStops=[...S.coffeeStops.map(s=>({...s,type:'coffee'})),...S.gasStops.map(s=>({...s,type:'gas'}))].sort((a,b)=>a.mile-b.mile);
 
     // ── Route option cards (if alternatives found)
     let html='';
@@ -1182,7 +1129,7 @@ async function planRoute(){
           <div class="route-card-stats">
             <div class="rcs"><b>${mi}</b> mi</div>
             <div class="rcs"><b>${dur}</b> drive</div>
-            <div class="rcs"><b>${sampleMile(rt.geometry.coordinates,sMid).length}</b> rest stops</div>
+            <div class="rcs"><b>${sampleMile(rt.geometry.coordinates,sMid).length}</b> stops</div>
           </div>
         </div>`;
       });
@@ -1193,7 +1140,7 @@ async function planRoute(){
     html+=`<div class="route-stats">
       <div class="rstat"><div class="rstat-val">${Math.round(totalMiles)}</div><div class="rstat-label">Miles</div></div>
       <div class="rstat"><div class="rstat-val">${fmtDur(totalSecs)}</div><div class="rstat-label">Drive time</div></div>
-      <div class="rstat"><div class="rstat-val">${allStops.length}</div><div class="rstat-label">Stops</div></div>
+      <div class="rstat"><div class="rstat-val">${S.coffeeStops.length}</div><div class="rstat-label">Stops</div></div>
     </div>`;
 
     html+=`<div class="gas-banner">
@@ -1213,32 +1160,22 @@ async function planRoute(){
       <div id="weather-content"><div class="loading"><div class="spinner"></div> Checking forecast…</div></div>
     </div>`;
 
-    S.plannedStops=[];
-    html+=`<div class="card" style="padding-bottom:8px">
-      <div class="card-title">Stops Along Your Route</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:12px">Review each stop and add or skip it before you drive.</div>`;
-    if(allStops.length===0){html+=`<div style="font-size:13px;color:var(--muted);padding:8px 0">No stop types selected. Enable some above in Trip Settings.</div>`;}
-    allStops.forEach((s,i)=>{
-      html+=`<div class="stop-plan-card" id="stop-row-${i}">
-        <div class="stop-plan-header">
-          <div class="stop-dot ${s.dotClass}" id="stop-dot-${i}">${s.icon}</div>
-          <div style="flex:1;min-width:0">
-            <div class="stop-name">${s.label}</div>
-            <div class="stop-eta">Mile ${Math.round(s.mile)} · ETA ${fmtETA((s.mile/totalMiles)*totalSecs)}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-            <div class="stop-mile">Mile ${Math.round(s.mile)}</div>
-            <div class="stop-weather-badge" id="sw-${Math.round(s.mile)}"></div>
-          </div>
+    html+=`<div class="card" style="padding-bottom:4px"><div class="card-title">Planned Stops</div>`;
+    allStops.forEach(s=>{
+      const isG=s.type==='gas';
+      html+=`<div class="stop-item">
+        <div class="stop-dot ${isG?'dot-gas':'dot-coffee'}">${isG?'⛽':'☕'}</div>
+        <div class="stop-body">
+          <div class="stop-name">${isG?'Gas reminder':'Coffee / rest stop'}</div>
+          <div class="stop-eta">ETA ${fmtETA((s.mile/totalMiles)*totalSecs)}</div>
         </div>
-        <div class="stop-plan-place" id="stop-place-${i}"><span style="color:var(--muted);font-size:12px;font-weight:500">🔍 Finding best stop here…</span></div>
-        <div class="stop-plan-btns" id="stop-btns-${i}">
-          <button class="stop-accept-btn" onclick="acceptStop(${i})">✅ Add to Route</button>
-          <button class="stop-skip-btn" onclick="rejectStop(${i})">✕ Skip</button>
+        <div class="stop-right">
+          <div class="stop-mile">Mile ${Math.round(s.mile)}</div>
+          <div class="stop-weather-badge" id="sw-${Math.round(s.mile)}"></div>
         </div>
       </div>`;
     });
-    html+=`<div class="stop-item" style="margin-top:4px">
+    html+=`<div class="stop-item">
       <div class="stop-dot dot-dest">🏁</div>
       <div class="stop-body"><div class="stop-name">Destination</div><div class="stop-eta">ETA ${fmtETA(totalSecs)}</div></div>
       <div class="stop-right"><div class="stop-mile">${Math.round(totalMiles)} mi</div></div>
@@ -1253,24 +1190,6 @@ async function planRoute(){
 
     res.innerHTML=html;driveBtn.style.display='block';
     setTimeout(()=>driveBtn.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
-
-    // Fetch real nearby places — staggered to avoid Overpass rate limits
-    S.allStops=allStops;
-    allStops.forEach((s,i)=>{
-      setTimeout(()=>{
-        fetchNearbyPlace(s.lat,s.lon,s.type).then(place=>{
-          s.place=place;
-          const el=document.getElementById(`stop-place-${i}`);
-          if(!el)return;
-          if(place){
-            const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name)}&ll=${place.lat},${place.lon}`;
-            el.innerHTML=`📍 <a href="${mapsUrl}" target="_blank" style="color:var(--accent);text-decoration:none;font-weight:800">${place.name}</a><span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">↗ view on map</span>`;
-          } else {
-            el.innerHTML=`<span style="color:var(--muted);font-size:12px;font-style:italic">No specific place found nearby</span>`;
-          }
-        });
-      }, i*900);
-    });
 
     // Fetch weather async
     fetchRouteWeather(coords,totalMiles,totalSecs).then(pts=>{
@@ -1358,7 +1277,7 @@ function startDrive(){
   }
   setTimeout(()=>S.driveMap.invalidateSize(),380);
   if(S.userMarker)S.userMarker.remove();
-  const ci=L.divIcon({html:`<div style="width:44px;height:44px;filter:drop-shadow(0 0 10px rgba(34,211,107,.8))"><svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg"><ellipse cx="22" cy="24" rx="16" ry="18" fill="rgba(34,211,107,0.18)"/><rect x="14" y="7" width="16" height="26" rx="7" fill="#22d36b"/><rect x="16" y="9" width="12" height="10" rx="3" fill="rgba(210,255,235,0.85)"/><rect x="17" y="23" width="10" height="6" rx="2" fill="rgba(210,255,235,0.5)"/><rect x="10" y="10" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="29" y="10" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="10" y="24" width="5" height="8" rx="2.5" fill="#0a2a12"/><rect x="29" y="24" width="5" height="8" rx="2.5" fill="#0a2a12"/><ellipse cx="17" cy="7" rx="3.5" ry="2" fill="#fffde0" opacity="0.95"/><ellipse cx="27" cy="7" rx="3.5" ry="2" fill="#fffde0" opacity="0.95"/><rect x="14" y="32" width="6" height="3" rx="1.5" fill="#ff4d6a" opacity="0.9"/><rect x="24" y="32" width="6" height="3" rx="1.5" fill="#ff4d6a" opacity="0.9"/></svg></div>`,iconSize:[44,44],iconAnchor:[22,22],className:''});
+  const ci=L.divIcon({html:`<div style="width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;border:2.5px solid white;box-shadow:0 0 14px rgba(34,211,107,.7)">🚗</div>`,iconSize:[32,32],iconAnchor:[16,16],className:''});
   S.userMarker=L.marker([0,0],{icon:ci,zIndexOffset:1000}).addTo(S.driveMap);
   // Save original destination so user can always return to it
   if(!S.origDestCoords&&S.destCoords){
@@ -1368,7 +1287,7 @@ function startDrive(){
     document.getElementById('orig-dest-full').textContent=S.origDestName;
   }
   if(S.incidentCheckId){clearInterval(S.incidentCheckId);S.incidentCheckId=null;}
-  Object.assign(S,{lastGPS:null,totalDriven:0,sinceLastStop:0,sinceLastGas:0,voiceAlerted:{},stopShown:false,gasShown:false,offtrackShown:false,incidentShown:false,rerouteConfirmShown:false});
+  Object.assign(S,{lastGPS:null,totalDriven:0,sinceLastStop:0,sinceLastGas:0,voiceAlerted:{},stopShown:false,gasShown:false,offtrackShown:false,offtrackCount:0,lastRerouteTime:0,incidentShown:false});
   ['stop-alert','gas-alert','gps-err','offtrack-banner','return-banner','newdest-panel','incident-banner'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
   // Auto-check traffic every 8 minutes while driving
   S.incidentCheckId=setInterval(()=>{if(S.lastGPS&&!S.incidentShown)checkTrafficAhead();},8*60*1000);
@@ -1401,9 +1320,25 @@ function startDrive(){
 
 function distToRoute(lat,lon){
   if(!S.route)return 0;
-  let min=Infinity;
   const coords=S.route.coords;
-  for(let i=0;i<coords.length;i++){const d=haversine(lat,lon,coords[i][1],coords[i][0]);if(d<min)min=d;}
+  let min=Infinity;
+  for(let i=0;i<coords.length;i++){
+    // Distance to this vertex
+    const d=haversine(lat,lon,coords[i][1],coords[i][0]);
+    if(d<min)min=d;
+    // Distance to the segment between prev and current vertex (true perpendicular dist)
+    if(i>0){
+      const x1=coords[i-1][1],y1=coords[i-1][0];
+      const x2=coords[i][1],y2=coords[i][0];
+      const dx=x2-x1,dy=y2-y1;
+      const lenSq=dx*dx+dy*dy;
+      if(lenSq>0){
+        const t=Math.max(0,Math.min(1,((lat-x1)*dx+(lon-y1)*dy)/lenSq));
+        const ds=haversine(lat,lon,x1+t*dx,y1+t*dy);
+        if(ds<min)min=ds;
+      }
+    }
+  }
   return min;
 }
 function onGPS(pos){
@@ -1413,33 +1348,24 @@ function onGPS(pos){
   if(S.lastGPS){const seg=haversine(S.lastGPS[0],S.lastGPS[1],lat,lon);if(seg<2){S.totalDriven+=seg;S.sinceLastStop+=seg;S.sinceLastGas+=seg;}}
   S.lastGPS=[lat,lon];
   updateTurnBanner(lat,lon);
-  // Off-track detection — auto-reroute silently when >0.5 mi off route
-  if(S.route&&!S.rerouting&&!S.stopShown){
+  // Off-track detection — segment-distance check; requires 3 consecutive pings off route
+  // before rerouting, and enforces a 45s cooldown between reroutes.
+  if(S.route&&!S.rerouting){
     const dist=distToRoute(lat,lon);
-    if(dist>0.5&&!S.offtrackShown){
-      S.offtrackShown=true;
-      autoReroute();
-    } else if(dist<=0.3&&S.offtrackShown){
-      S.offtrackShown=false;
+    const now=Date.now();
+    if(dist>0.25){
+      S.offtrackCount=(S.offtrackCount||0)+1;
+      if(S.offtrackCount>=3&&!S.offtrackShown&&(!S.lastRerouteTime||now-S.lastRerouteTime>45000)){
+        S.offtrackShown=true;
+        S.lastRerouteTime=now;
+        S.offtrackCount=0;
+        autoReroute();
+      }
+    } else {
+      S.offtrackCount=0;
+      if(dist<=0.18)S.offtrackShown=false;
     }
   }
-  // Check accepted planned stops
-  S.plannedStops.forEach(p=>{
-    if(p.alerted)return;
-    const milesAway=p.mile-S.totalDriven;
-    if(milesAway>0&&milesAway<=2){
-      p.alerted=true;
-      const name=p.place?.name||p.label;
-      speak(`Coming up in ${fmtTurnDist(milesAway)}: ${name}.`);
-      const banner=document.getElementById('stop-alert');
-      if(banner){
-        const titleEl=banner.querySelector('.alert-title')||banner;
-        titleEl.textContent=`${p.icon} ${name} ahead`;
-        banner.style.display='block';
-        setTimeout(()=>{if(banner)banner.style.display='none';},8000);
-      }
-    }
-  });
   // Check waypoint arrivals
   S.driveWaypoints.forEach((wp,i)=>{
     if(wp.reached)return;
@@ -1461,30 +1387,15 @@ function onGPS(pos){
   // Only announce arrival when at actual final destination (not a waypoint)
   if(remain!=null&&remain<0.3&&!nextWp){speak('You have arrived at your destination!');stopDrive();return;}
   if(!S.stopShown){
-    const hasCoffee=S.stopTypes.includes('coffee'),hasRR=S.stopTypes.includes('restroom');
-    const stopWord=hasCoffee&&hasRR?'coffee and restroom stop':hasCoffee?'coffee stop':hasRR?'restroom break':'stop';
-    if(miLeft<=5&&!S.voiceAlerted[5]){speak(S.isNight?`${stopWord} in 5 miles. Look for 24-hour locations.`:`${stopWord} in 5 miles.`);S.voiceAlerted[5]=true;}
-    else if(miLeft<=10&&!S.voiceAlerted[10]){speak(`${stopWord} in 10 miles.`);S.voiceAlerted[10]=true;}
+    if(miLeft<=5&&!S.voiceAlerted[5]){speak(S.isNight?'Coffee stop in 5 miles. Look for 24-hour locations.':'Coffee stop in 5 miles.');S.voiceAlerted[5]=true;}
+    else if(miLeft<=10&&!S.voiceAlerted[10]){speak('Coffee stop in 10 miles.');S.voiceAlerted[10]=true;}
   }
   if(miLeft<=0&&!S.stopShown){
     S.stopShown=true;
-    const hasCoffee=S.stopTypes.includes('coffee'),hasRR=S.stopTypes.includes('restroom');
-    const stopTitle=hasCoffee&&hasRR?'Time for a coffee & restroom stop!':hasCoffee?'Time for a coffee stop!':hasRR?'Time for a restroom break!':'Time to stop!';
-    const stopTitleNight=hasCoffee&&hasRR?'Time for a 24h stop!':'Time for a stop!';
-    speak(S.isNight?stopTitleNight:stopTitle);
+    speak(S.isNight?'Time for a coffee stop! Look for 24-hour locations.':'Time for a coffee stop!');
     document.getElementById('normal-hud').style.display='none';
     document.getElementById('stop-alert').style.display='block';
-    document.getElementById('sa-title').textContent=S.isNight?stopTitleNight:stopTitle;
-    document.getElementById('sa-sub').textContent=`Near mile ${Math.round(S.totalDriven)} on your route`;
-    // Update stop buttons based on selected types
-    const btns=document.getElementById('stop-alert-btns');
-    if(btns){
-      let bHtml='';
-      if(hasCoffee)bHtml+=`<button class="btn btn-sm" onclick="findStop('coffee')" style="background:linear-gradient(135deg,#ffb020,#ff7c0a);box-shadow:0 4px 16px rgba(255,176,32,.25)">☕ Coffee</button>`;
-      if(hasRR)bHtml+=`<button class="btn btn-sm btn-ghost" onclick="findStop('rest')">🚻 Restroom</button>`;
-      if(!hasCoffee&&!hasRR)bHtml+=`<button class="btn btn-sm btn-ghost" onclick="findStop('rest')">🛑 Find Stop</button>`;
-      btns.innerHTML=bHtml;
-    }
+    document.getElementById('sa-title').textContent=S.isNight?'Time for a 24h stop!':'Time for a coffee stop!';
   }
   // Gas alert: factor in starting fuel level
   const effectiveRange=(S.currentFuelPct/100)*S.tankRange;
@@ -1497,117 +1408,11 @@ function onGPS(pos){
 }
 function onGPSErr(err){const el=document.getElementById('gps-err');el.style.display='block';el.textContent=`📡 GPS error: ${err.message} — Allow location in Settings → Safari → Location.`;}
 
-function acceptStop(i){
-  const s=S.allStops[i];if(!s)return;
-  s.accepted=true;s.rejected=false;
-  if(!S.plannedStops.find(p=>p.stopIdx===i))S.plannedStops.push({...s,stopIdx:i,alerted:false});
-  const row=document.getElementById(`stop-row-${i}`);
-  const btns=document.getElementById(`stop-btns-${i}`);
-  const dot=document.getElementById(`stop-dot-${i}`);
-  if(btns)btns.innerHTML=`<div style="color:var(--green);font-size:13px;font-weight:700;padding:4px 0">✅ Added to your route</div>`;
-  if(row){row.style.borderLeft='3px solid #22d36b';row.style.paddingLeft='10px';}
-  if(dot){dot.style.boxShadow='0 0 0 2px #22d36b';}
-}
-function rejectStop(i){
-  const s=S.allStops[i];if(!s)return;
-  s.accepted=false;s.rejected=true;
-  S.plannedStops=S.plannedStops.filter(p=>p.stopIdx!==i);
-  const row=document.getElementById(`stop-row-${i}`);
-  const btns=document.getElementById(`stop-btns-${i}`);
-  if(btns)btns.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:4px 0">⛔ Skipped — won't stop here</div>`;
-  if(row)row.style.opacity='0.4';
-}
-
-async function fetchNearbyPlace(lat,lon,type){
-  const ttKey=localStorage.getItem('rtp_tomtom_key')||'';
-
-  // ── TomTom POI Search (fast, complete highway data) ──────────────────────
-  if(ttKey){
-    try{
-      const queries={gas:'gas station',restroom:'rest area',rest:'rest area',welcome:'visitor center',coffee:'coffee shop'};
-      const q=queries[type]||'coffee shop';
-      // Try 25km first, widen to 40km if nothing found
-      const ttUrl=(radius)=>`https://api.tomtom.com/search/2/poiSearch/${encodeURIComponent(q)}.json?lat=${lat}&lon=${lon}&radius=${radius}&limit=10&key=${ttKey}`;
-      let data={results:[]};
-      for(const radius of[25000,40000]){
-        const r=await fetch(ttUrl(radius));
-        if(r.ok)data=await r.json();
-        if(data.results?.length)break;
-      }
-      const results=data.results||[];
-      if(results.length){
-        // Prefer well-known chains
-        const chains=type==='gas'?['shell','bp','exxon','mobil','chevron','sunoco','marathon','speedway','pilot','loves','flying j']:
-                     (type==='restroom'||type==='rest')?["love's",'pilot','flying j','ta travel','petro']:
-                     ['starbucks','dunkin','mcdonald','panera','caribou','peet','dutch bros','tim horton','wawa','sheetz'];
-        const sorted=[...results].sort((a,b)=>{
-          const an=(a.poi?.name||'').toLowerCase(),bn=(b.poi?.name||'').toLowerCase();
-          return (chains.some(c=>bn.includes(c))?1:0)-(chains.some(c=>an.includes(c))?1:0);
-        });
-        const best=sorted[0];
-        if(best?.poi?.name)return{name:best.poi.name,lat:best.position.lat,lon:best.position.lon};
-      }
-    }catch(e){}
-  }
-
-  // ── Overpass fallback (free, no key, OpenStreetMap data) ─────────────────
-  const restroomChains=["love's",'pilot','flying j','ta travel','petro','rest area','service area'];
-  const coffeeChains=['starbucks','dunkin','mcdonald','panera','caribou','peet','dutch bros','tim horton','wawa','sheetz'];
-  const chains=(type==='restroom'||type==='rest')?restroomChains:coffeeChains;
-  const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
-
-  const buildQuery=(radius)=>{
-    if(type==='gas')return `[out:json][timeout:14];node["amenity"="fuel"](around:${radius},${lat},${lon});out body 10;`;
-    if(type==='welcome')return `[out:json][timeout:14];(node["highway"="services"](around:${radius},${lat},${lon});node["tourism"="information"]["name"](around:${radius},${lat},${lon}););out body 5;`;
-    if(type==='restroom'||type==='rest')return `[out:json][timeout:14];(node["highway"="rest_area"](around:${radius},${lat},${lon});node["amenity"="toilets"]["name"](around:${radius},${lat},${lon});node["highway"="services"](around:${radius},${lat},${lon});node["amenity"="fuel"]["brand"~"Love|Pilot|Flying J|TA Travel|Petro",i](around:${radius},${lat},${lon}););out body 10;`;
-    return `[out:json][timeout:14];(node["amenity"="cafe"]["name"](around:${radius},${lat},${lon});node["amenity"="fast_food"]["cuisine"~"coffee",i]["name"](around:${radius},${lat},${lon});node["brand"~"Starbucks|Dunkin|Tim Horton|Peet|Dutch Bros|Caribou|Wawa|Sheetz",i](around:${radius},${lat},${lon}););out body 12;`;
-  };
-
-  const tryOverpass=async(radius)=>{
-    for(const ep of endpoints){
-      try{
-        const res=await fetch(`${ep}?data=${encodeURIComponent(buildQuery(radius))}`);
-        if(!res.ok)continue;
-        const data=await res.json();
-        const named=(data.elements||[]).filter(e=>e.type==='node'&&e.tags?.name);
-        if(!named.length)continue;
-        named.sort((a,b)=>{
-          const al=a.tags.name.toLowerCase(),bl=b.tags.name.toLowerCase();
-          return (chains.some(c=>bl.includes(c))?1:0)-(chains.some(c=>al.includes(c))?1:0);
-        });
-        const el=named[0];
-        return{name:el.tags.name,lat:el.lat,lon:el.lon};
-      }catch(e){continue;}
-    }
-    return null;
-  };
-
-  // First try 20km (~12 mi), then widen to 35km (~22 mi) if nothing found
-  const first=await tryOverpass(20000);
-  if(first)return first;
-  const wider=await tryOverpass(35000);
-  return wider;
-}
-
 function findStop(type){
   if(!S.lastGPS)return;
-  // Find the next planned stop of this type at or ahead on the route.
-  // Searching at the route coordinate (not just current GPS) keeps results on-route.
-  let lat,lon;
-  if(type==='gas'){
-    const next=S.gasStops.find(s=>s.mile>=S.totalDriven-1);
-    if(next){lat=next.lat;lon=next.lon;}else{[lat,lon]=S.lastGPS;}
-  } else if(type==='welcome'){
-    const next=S.welcomeStops.find(s=>s.mile>=S.totalDriven-1);
-    if(next){lat=next.lat;lon=next.lon;}else{[lat,lon]=S.lastGPS;}
-  } else {
-    // coffee / rest — use the next coffee stop on the route
-    const next=S.coffeeStops.find(s=>s.mile>=S.totalDriven-1);
-    if(next){lat=next.lat;lon=next.lon;}else{[lat,lon]=S.lastGPS;}
-  }
-  const q=type==='gas'?'gas+station':type==='rest'||(type==='restroom')?(S.isNight?'24+hour+rest+area':'rest+area'):(S.isNight?'24+hour+coffee':'coffee+shop');
-  // zoom 15z keeps results within ~2 miles of the route point
-  window.open(`https://www.google.com/maps/search/${q}/@${lat},${lon},15z`);
+  const[lat,lon]=S.lastGPS;
+  const q=type==='gas'?'gas+station':type==='rest'?(S.isNight?'24+hour+rest+area':'rest+area'):(S.isNight?'24+hour+coffee+rest+area':'coffee+rest+area');
+  window.open(`https://www.google.com/maps/search/${q}/@${lat},${lon},13z`);
 }
 function markStopped(){
   S.sinceLastStop=0;S.stopShown=false;S.voiceAlerted={};
@@ -1652,33 +1457,14 @@ function skipStop(){
   }
 }
 async function autoReroute(){
-  if(S.rerouting||!S.lastGPS||!S.destCoords||S.rerouteConfirmShown)return;
-  S.rerouteConfirmShown=true;
-  // Show confirmation dialog — ask if they still want to go to the same destination
-  const destName=S.origDestName||document.getElementById('to-input').value.trim()||'your destination';
-  const label=document.getElementById('reroute-dest-label');
-  if(label)label.textContent=destName.split(',').slice(0,2).join(',');
-  const panel=document.getElementById('reroute-confirm');
-  if(panel){panel.style.display='flex';panel.style.removeProperty('display');}
-  speak('Off route. Keep your current destination?');
-}
-async function confirmReroute(keepDest){
-  const panel=document.getElementById('reroute-confirm');
-  if(panel)panel.style.display='none';
-  S.rerouteConfirmShown=false;
-  if(keepDest){
-    S.rerouting=true;
-    const banner=document.getElementById('offtrack-banner');
-    if(banner)banner.style.display='block';
-    speak('Recalculating.');
-    await rerouteFromHere(S.destCoords);
-    S.rerouting=false;S.offtrackShown=false;
-    if(banner)banner.style.display='none';
-  } else {
-    // Driver wants to change route — return to plan screen
-    S.offtrackShown=false;
-    stopDrive();
-  }
+  if(S.rerouting||!S.lastGPS||!S.destCoords)return;
+  S.rerouting=true;
+  const banner=document.getElementById('offtrack-banner');
+  if(banner)banner.style.display='block';
+  speak('Recalculating.');
+  await rerouteFromHere(S.destCoords);
+  S.rerouting=false;S.offtrackShown=false;
+  if(banner)banner.style.display='none';
 }
 async function rerouteFromHere(destCoords,altMode=false){
   if(!S.lastGPS||!destCoords){speak('GPS not available yet.');return;}
@@ -1778,7 +1564,7 @@ async function returnToOriginal(){
     S.destCoords=S.origDestCoords;
     S.coffeeStops=sampleMile(coords,S.stopMid);
     S.gasStops=sampleMile(coords,S.tankRange*0.8);
-    S.sinceLastStop=0;S.stopShown=false;S.voiceAlerted={};S.offtrackShown=false;
+    S.sinceLastStop=0;S.stopShown=false;S.voiceAlerted={};S.offtrackShown=false;S.offtrackCount=0;
     if(S.driveRouteLayer){S.driveMap.removeLayer(S.driveRouteLayer);S.driveRouteLayer=null;}
     S.driveRouteLayer=L.geoJSON({type:'LineString',coordinates:coords},{style:{color:'#5b8fff',weight:5,opacity:.85}}).addTo(S.driveMap);
     S.driveMap.fitBounds(S.driveRouteLayer.getBounds(),{padding:[60,60]});
@@ -1868,21 +1654,6 @@ function getStepArrow(type,modifier){
   return`<line x1="27" y1="46" x2="27" y2="14" ${s}/><polyline points="15,27 27,12 39,27" ${s} fill="none"/>`;
 }
 
-function getManeuverArrow(modifier){
-  // Big glowing directional arrow placed ON the map at the decision point
-  const m=modifier||'';
-  const isLeft=m.includes('left'),isRight=m.includes('right');
-  const color=isLeft?'#5b8fff':isRight?'#22d36b':'#ffb020';
-  const glow=isLeft?'rgba(91,143,255,.6)':isRight?'rgba(34,211,107,.6)':'rgba(255,176,32,.6)';
-  let arrow;
-  if(isLeft&&m.includes('slight'))arrow=`<path d="M38,52 L38,28 Q38,16 28,12 L18,8" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="8,8 18,8 18,18" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
-  else if(isLeft)arrow=`<path d="M38,52 L38,30 Q38,12 20,12" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="8,12 20,12 20,22" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
-  else if(isRight&&m.includes('slight'))arrow=`<path d="M22,52 L22,28 Q22,16 32,12 L42,8" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="52,8 42,8 42,18" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
-  else if(isRight)arrow=`<path d="M22,52 L22,30 Q22,12 40,12" stroke="${color}" stroke-width="6" stroke-linecap="round" fill="none"/><polyline points="52,12 40,12 40,22" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
-  else arrow=`<line x1="30" y1="52" x2="30" y2="10" stroke="${color}" stroke-width="6" stroke-linecap="round"/><polyline points="18,24 30,8 42,24" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
-  return`<div style="width:60px;height:60px;filter:drop-shadow(0 0 10px ${glow})"><svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><circle cx="30" cy="30" r="28" fill="rgba(10,12,20,.82)" stroke="${color}" stroke-width="2.5"/>${arrow}</svg></div>`;
-}
-
 function getStepText(type,modifier,name){
   const road=name?` on ${name}`:'';
   if(type==='arrive')return'Arrive at destination';
@@ -1943,15 +1714,6 @@ function updateTurnBanner(lat,lon){
   if(arrSvg)arrSvg.innerHTML=getStepArrow(nextStep.type,nextStep.modifier);
   document.getElementById('turn-instruction').textContent=instr;
   document.getElementById('turn-dist-badge').textContent=fmtTurnDist(dist);
-
-  // ── Map maneuver arrow: show on road for keep-left/right, forks, turns ──
-  if(S.maneuverMarker){S.driveMap.removeLayer(S.maneuverMarker);S.maneuverMarker=null;}
-  const needsMapArrow=nextStep.type==='fork'||nextStep.type==='end of road'||
-    (nextStep.modifier&&(nextStep.modifier.includes('left')||nextStep.modifier.includes('right')));
-  if(needsMapArrow&&dist<1.5&&dist>0.05){
-    const icon=L.divIcon({html:getManeuverArrow(nextStep.modifier),iconSize:[60,60],iconAnchor:[30,30],className:''});
-    S.maneuverMarker=L.marker([nextStep.lat,nextStep.lon],{icon,zIndexOffset:900,interactive:false}).addTo(S.driveMap);
-  }
   document.getElementById('turn-progress-fill').style.width=pct+'%';
   // Voice callouts
   if(!S.stepVoiced[nextIdx])S.stepVoiced[nextIdx]={};
@@ -2009,13 +1771,6 @@ function togglePref(type){
     S.avoidHighways=!S.avoidHighways;
     document.getElementById('chip-hwy').classList.toggle('on',S.avoidHighways);
   }
-}
-function toggleStopType(type){
-  const chipId=type==='gas'?'chip-gas-stop':type==='restroom'?'chip-restroom':type==='welcome'?'chip-welcome':'chip-coffee';
-  const chip=document.getElementById(chipId);
-  const idx=S.stopTypes.indexOf(type);
-  if(idx>=0){S.stopTypes.splice(idx,1);if(chip)chip.classList.remove('on');}
-  else{S.stopTypes.push(type);if(chip)chip.classList.add('on');}
 }
 
 // ── ROUTE SELECTION ──────────────────────────────────────────────────────────
@@ -2104,7 +1859,6 @@ function stopDrive(){
   if(S.incidentCheckId){clearInterval(S.incidentCheckId);S.incidentCheckId=null;}
   if(S.clockInterval){clearInterval(S.clockInterval);S.clockInterval=null;}
   if(S.userMarker){S.userMarker.remove();S.userMarker=null;}
-  if(S.maneuverMarker){S.driveMap.removeLayer(S.maneuverMarker);S.maneuverMarker=null;}
   releaseWakeLock();
   stopSilentAudio();
   const tstrip=document.getElementById('turn-strip');if(tstrip)tstrip.style.display='none';
